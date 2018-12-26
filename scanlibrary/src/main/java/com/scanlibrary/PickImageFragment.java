@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,9 +23,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * Created by jhansi on 04/04/15.
- */
 public class PickImageFragment extends Fragment {
 
     private View view;
@@ -36,6 +34,7 @@ public class PickImageFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        Log.d("ATTACHED","ATTACHED");
         if (!(activity instanceof IScanner)) {
             throw new ClassCastException("Activity must implement IScanner");
         }
@@ -45,6 +44,7 @@ public class PickImageFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.pick_image_fragment, null);
+        Log.d("ON CREATE VIEW","INIT HUA");
         init();
         return view;
     }
@@ -81,12 +81,12 @@ public class PickImageFragment extends Fragment {
     }
 
     private boolean isIntentPreferenceSet() {
-        int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
+        int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 4);
         return preference != 0;
     }
 
     private int getIntentPreference() {
-        int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
+        int preference = getArguments().getInt(ScanConstants.OPEN_INTENT_PREFERENCE, 4);
         return preference;
     }
 
