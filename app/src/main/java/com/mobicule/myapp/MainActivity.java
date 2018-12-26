@@ -20,9 +20,7 @@ import java.io.IOException;
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE = 99;
-    private Button scanButton;
     private Button cameraButton;
-    private Button mediaButton;
     private ImageView scannedImageView;
 
     @Override
@@ -33,24 +31,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        scanButton = (Button) findViewById(R.id.scanButton);
-        scanButton.setOnClickListener(new ScanButtonClickListener());
-        cameraButton = (Button) findViewById(R.id.cameraButton);
+        cameraButton = findViewById(R.id.cameraButton);
         cameraButton.setOnClickListener(new ScanButtonClickListener(ScanConstants.OPEN_CAMERA));
-        mediaButton = (Button) findViewById(R.id.mediaButton);
-        mediaButton.setOnClickListener(new ScanButtonClickListener(ScanConstants.OPEN_MEDIA));
-        scannedImageView = (ImageView) findViewById(R.id.scannedImage);
+        scannedImageView = findViewById(R.id.scannedImage);
     }
 
     private class ScanButtonClickListener implements View.OnClickListener {
-
         private int preference;
-
         public ScanButtonClickListener(int preference) {
             this.preference = preference;
-        }
-
-        public ScanButtonClickListener() {
         }
 
         @Override
@@ -68,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if ((requestCode == 9762) && (resultCode == Activity.RESULT_OK) ) {
+        if ((requestCode == REQUEST_CODE) && (resultCode == Activity.RESULT_OK) ) {
             Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
             Bitmap bitmap = null;
             try {
@@ -80,9 +69,5 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
-//    private Bitmap convertByteArrayToBitmap(byte[] data) {
-//        return BitmapFactory.decodeByteArray(data, 0, data.length);
-//    }
 
 }

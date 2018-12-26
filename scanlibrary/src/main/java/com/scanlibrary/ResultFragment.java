@@ -26,10 +26,6 @@ public class ResultFragment extends Fragment {
     private ImageView scannedImageView;
     private Button doneButton;
     private Bitmap original;
-    private Button originalButton;
-    private Button MagicColorButton;
-    private Button grayModeButton;
-    private Button bwButton;
     private Bitmap transformed;
     private static ProgressDialogFragment progressDialogFragment;
 
@@ -45,14 +41,6 @@ public class ResultFragment extends Fragment {
 
     private void init() {
         scannedImageView = (ImageView) view.findViewById(R.id.scannedImage);
-        originalButton = (Button) view.findViewById(R.id.original);
-        originalButton.setOnClickListener(new OriginalButtonClickListener());
-        MagicColorButton = (Button) view.findViewById(R.id.magicColor);
-        MagicColorButton.setOnClickListener(new MagicColorButtonClickListener());
-        grayModeButton = (Button) view.findViewById(R.id.grayMode);
-        grayModeButton.setOnClickListener(new GrayButtonClickListener());
-        bwButton = (Button) view.findViewById(R.id.BWMode);
-        bwButton.setOnClickListener(new BWButtonClickListener());
         Bitmap bitmap = getBitmap();
         setScannedImage(bitmap);
         doneButton = (Button) view.findViewById(R.id.doneButton);
@@ -108,120 +96,6 @@ public class ResultFragment extends Fragment {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }
-            });
-        }
-    }
-
-    private class BWButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(final View v) {
-            showProgressDialog(getResources().getString(R.string.applying_filter));
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        transformed = ((ScanActivity) getActivity()).getBWBitmap(original);
-                    } catch (final OutOfMemoryError e) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                transformed = original;
-                                scannedImageView.setImageBitmap(original);
-                                e.printStackTrace();
-                                dismissDialog();
-                                onClick(v);
-                            }
-                        });
-                    }
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            scannedImageView.setImageBitmap(transformed);
-                            dismissDialog();
-                        }
-                    });
-                }
-            });
-        }
-    }
-
-    private class MagicColorButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(final View v) {
-            showProgressDialog(getResources().getString(R.string.applying_filter));
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        transformed = ((ScanActivity) getActivity()).getMagicColorBitmap(original);
-                    } catch (final OutOfMemoryError e) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                transformed = original;
-                                scannedImageView.setImageBitmap(original);
-                                e.printStackTrace();
-                                dismissDialog();
-                                onClick(v);
-                            }
-                        });
-                    }
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            scannedImageView.setImageBitmap(transformed);
-                            dismissDialog();
-                        }
-                    });
-                }
-            });
-        }
-    }
-
-    private class OriginalButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            try {
-                showProgressDialog(getResources().getString(R.string.applying_filter));
-                transformed = original;
-                scannedImageView.setImageBitmap(original);
-                dismissDialog();
-            } catch (OutOfMemoryError e) {
-                e.printStackTrace();
-                dismissDialog();
-            }
-        }
-    }
-
-    private class GrayButtonClickListener implements View.OnClickListener {
-        @Override
-        public void onClick(final View v) {
-            showProgressDialog(getResources().getString(R.string.applying_filter));
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        transformed = ((ScanActivity) getActivity()).getGrayBitmap(original);
-                    } catch (final OutOfMemoryError e) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                transformed = original;
-                                scannedImageView.setImageBitmap(original);
-                                e.printStackTrace();
-                                dismissDialog();
-                                onClick(v);
-                            }
-                        });
-                    }
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            scannedImageView.setImageBitmap(transformed);
-                            dismissDialog();
-                        }
-                    });
                 }
             });
         }
