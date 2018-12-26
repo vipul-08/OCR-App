@@ -8,26 +8,40 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * Created by jhansi on 29/03/15.
  */
 public class ResultFragment extends Fragment {
 
+    private static ProgressDialogFragment progressDialogFragment;
     private View view;
     private ImageView scannedImageView;
     private Button doneButton;
     private Bitmap original;
     private Bitmap transformed;
-    private static ProgressDialogFragment progressDialogFragment;
+    private Uri fileUri;
+
 
     public ResultFragment() {
     }
@@ -68,6 +82,119 @@ public class ResultFragment extends Fragment {
         scannedImageView.setImageBitmap(scannedImage);
     }
 
+    protected synchronized void showProgressDialog(String message) {
+        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
+            // Before creating another loading dialog, close all opened loading dialogs (if any)
+            progressDialogFragment.dismissAllowingStateLoss();
+        }
+        progressDialogFragment = null;
+        progressDialogFragment = new ProgressDialogFragment(message);
+        FragmentManager fm = getFragmentManager();
+        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
+    }
+
+    protected synchronized void dismissDialog() {
+        progressDialogFragment.dismissAllowingStateLoss();
+    }
+
+    private File createImageFile() {
+        clearTempImages();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
+                Date());
+        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
+                ".jpg");
+        fileUri = Uri.fromFile(file);
+        return file;
+    }
+
+    private void clearTempImages() {
+        try {
+            File tempFolder = new File(ScanConstants.IMAGE_PATH);
+            for (File f : tempFolder.listFiles())
+                f.delete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void uploadImage(File bitmapToFile) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://ade86858.ngrok.io/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
+        Call<Response> call = retrofitInterface.test();
+        Log.d(TAG, "uploadImage: call : " + call);
+        call.enqueue(new Callback<Response>() {
+            @Override
+            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+                Log.d(TAG, "onResponse: Response Success : " + response);
+            }
+
+            @Override
+            public void onFailure(Call<Response> call, Throwable t) {
+                Log.d(TAG, "onResponse: Response Error : " + t);
+
+            }
+
+
+        });
+
+
+//        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), bitmapToFile);
+//
+//        MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
+//        Call<Response> call = retrofitInterface.uploadImage(body);
+////        mProgressBar.setVisibility(View.VISIBLE);
+//        call.enqueue(new Callback<Response>() {
+//            @Override
+//            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+//
+////                mProgressBar.setVisibility(View.GONE);
+//
+//                if (response.isSuccessful()) {
+//
+////                    Response responseBody = response.body();
+////                    mBtImageShow.setVisibility(View.VISIBLE);
+////                    mImageUrl = URL + responseBody.getPath();
+////                    Snackbar.make(findViewById(R.id.content), responseBody.getMessage(),Snackbar.LENGTH_SHORT).show();
+//
+//                    if (response.code() == 200) {
+//                        Log.d(TAG, "onResponse: =============================================================");
+//                    }
+//
+//                    Toast.makeText(getActivity().getBaseContext(), response.code() + " ", Toast.LENGTH_SHORT).show();
+//
+//                } else {
+//
+//                    ResponseBody errorBody = response.errorBody();
+//
+//                    Gson gson = new Gson();
+//
+//                    try {
+//
+//                        Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
+//                        Log.d(TAG, "onResponse: Error" + errorResponse.getMessage());
+////                        Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Response> call, Throwable t) {
+//
+//                // mProgressBar.setVisibility(View.GONE);
+//                Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
+//            }
+//        });
+
+    }
+
     private class DoneButtonClickListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -81,7 +208,14 @@ public class ResultFragment extends Fragment {
                         if (bitmap == null) {
                             bitmap = original;
                         }
+                        Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
+
+                        File bitmapToFile = createImageFile();
+                        Log.d(TAG, "run: bitmapToFile: " + bitmapToFile);
+                        uploadImage(bitmapToFile);
+
+
                         data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
                         original.recycle();
@@ -99,20 +233,5 @@ public class ResultFragment extends Fragment {
                 }
             });
         }
-    }
-
-    protected synchronized void showProgressDialog(String message) {
-        if (progressDialogFragment != null && progressDialogFragment.isVisible()) {
-            // Before creating another loading dialog, close all opened loading dialogs (if any)
-            progressDialogFragment.dismissAllowingStateLoss();
-        }
-        progressDialogFragment = null;
-        progressDialogFragment = new ProgressDialogFragment(message);
-        FragmentManager fm = getFragmentManager();
-        progressDialogFragment.show(fm, ProgressDialogFragment.class.toString());
-    }
-
-    protected synchronized void dismissDialog() {
-        progressDialogFragment.dismissAllowingStateLoss();
     }
 }
