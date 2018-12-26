@@ -15,13 +15,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.gson.Gson;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Retrofit;
@@ -97,51 +102,51 @@ public class ResultFragment extends Fragment {
         progressDialogFragment.dismissAllowingStateLoss();
     }
 
-    private File createImageFile() {
-        clearTempImages();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-                Date());
-        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-                ".jpg");
-        fileUri = Uri.fromFile(file);
-        return file;
-    }
+//    private File createImageFile() {
+//        clearTempImages();
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
+//                Date());
+//        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
+//                ".jpg");
+//        fileUri = Uri.fromFile(file);
+//        return file;
+//    }
 
-    private void clearTempImages() {
-        try {
-            File tempFolder = new File(ScanConstants.IMAGE_PATH);
-            for (File f : tempFolder.listFiles())
-                f.delete();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void uploadImage(File bitmapToFile) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://ade86858.ngrok.io/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
-        Call<Response> call = retrofitInterface.test();
-        Log.d(TAG, "uploadImage: call : " + call);
-        call.enqueue(new Callback<Response>() {
-            @Override
-            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-                Log.d(TAG, "onResponse: Response Success : " + response);
-            }
-
-            @Override
-            public void onFailure(Call<Response> call, Throwable t) {
-                Log.d(TAG, "onResponse: Response Error : " + t);
-
-            }
-
-
-        });
-
+//    private void clearTempImages() {
+//        try {
+//            File tempFolder = new File(ScanConstants.IMAGE_PATH);
+//            for (File f : tempFolder.listFiles())
+//                f.delete();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    private void uploadImage(File bitmapToFile) {
+//
+//        Retrofit retrofit = new Retrofit.Builder()
+//                .baseUrl("http://ade86858.ngrok.io/")
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build();
+//
+//        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
+//        Call<Response> call = retrofitInterface.test();
+//        Log.d(TAG, "uploadImage: call : " + call);
+//        call.enqueue(new Callback<Response>() {
+//            @Override
+//            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+//                Log.d(TAG, "onResponse: Response Success : " + response);
+//            }
+//
+//            @Override
+//            public void onFailure(Call<Response> call, Throwable t) {
+//                Log.d(TAG, "onResponse: Response Error : " + t);
+//
+//            }
+//
+//
+//        });
+//
 
 //        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), bitmapToFile);
 //
@@ -192,10 +197,13 @@ public class ResultFragment extends Fragment {
 //                Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
 //            }
 //        });
-
-    }
+//
+//    }
 
     private class DoneButtonClickListener implements View.OnClickListener {
+
+        public static final String URL = "http://192.168.137.1:5000";
+
         @Override
         public void onClick(View v) {
             showProgressDialog(getResources().getString(R.string.loading));
@@ -211,9 +219,17 @@ public class ResultFragment extends Fragment {
                         Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
 
-                        File bitmapToFile = createImageFile();
-                        Log.d(TAG, "run: bitmapToFile: " + bitmapToFile);
-                        uploadImage(bitmapToFile);
+                        //Bitmap bmp = intent.getExtras().get("data");
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byte[] byteArray = stream.toByteArray();
+                        bitmap.recycle();
+                        uploadImage(byteArray);
+
+
+//                        File bitmapToFile = createImageFile();
+//                        Log.d(TAG, "run: bitmapToFile: " + bitmapToFile);
+//                        uploadImage(bitmapToFile);
 
 
                         data.putExtra(ScanConstants.SCANNED_RESULT, uri);
@@ -230,6 +246,60 @@ public class ResultFragment extends Fragment {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                }
+            });
+        }
+        private void uploadImage(byte[] imageBytes) {
+
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+
+            RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
+
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
+
+            MultipartBody.Part body = MultipartBody.Part.createFormData("pic", "image.jpg", requestFile);
+            Call<Response> call = retrofitInterface.uploadImage(body);
+            //mProgressBar.setVisibility(View.VISIBLE);
+            call.enqueue(new Callback<Response>() {
+                @Override
+                public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+
+                    //mProgressBar.setVisibility(View.GONE);
+
+                    if (response.isSuccessful()) {
+
+                        Response responseBody = response.body();
+                        Log.d("Response",responseBody.toString()+"");
+//                        mBtImageShow.setVisibility(View.VISIBLE);
+//                        mImageUrl = URL + responseBody.getPath();
+//                        Snackbar.make(findViewById(R.id.content), responseBody.getMessage(),Snackbar.LENGTH_SHORT).show();
+
+                    } else {
+
+                        ResponseBody errorBody = response.errorBody();
+
+                        Gson gson = new Gson();
+
+                        try {
+
+                            Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
+                            Log.d("Error",errorResponse.getMessage()+"");
+//                            Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Response> call, Throwable t) {
+
+//                    mProgressBar.setVisibility(View.GONE);
+                    Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
                 }
             });
         }

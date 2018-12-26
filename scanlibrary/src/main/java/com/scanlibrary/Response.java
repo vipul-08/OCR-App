@@ -1,18 +1,15 @@
 package com.scanlibrary;
-
 public class Response {
 
-
     private String message;
-//    private String path;
+    private String path;
 
     public String getMessage() {
         return message;
     }
 
-//    public String getPath() {
-//        return path;
-//    }
-
+    public String getPath() {
+        return path;
+    }
 
 }
