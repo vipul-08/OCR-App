@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -202,7 +203,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://192.168.137.1:5000";
+        public static final String URL = "http://ade86858.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -221,9 +222,14 @@ public class ResultFragment extends Fragment {
 
                         //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
+
+//                        final int lnth=bitmap.getByteCount();
+//                        ByteBuffer dst= ByteBuffer.allocate(lnth);
+//                        bitmap.copyPixelsToBuffer( dst);
+//                        byte[] barray=dst.array();
                         uploadImage(byteArray);
 
 
