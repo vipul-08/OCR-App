@@ -3,7 +3,9 @@ package com.scanlibrary;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.app.LauncherActivity;
 import android.content.ComponentCallbacks2;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,7 +34,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     }
 
     protected int getPreferenceContent() {
-        return getIntent().getIntExtra(ScanConstants.OPEN_INTENT_PREFERENCE, 0);
+        return getIntent().getIntExtra(ScanConstants.OPEN_INTENT_PREFERENCE, 4);
     }
 
     @Override
@@ -120,6 +122,12 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
     public native Bitmap getBWBitmap(Bitmap bitmap);
 
     public native float[] getPoints(Bitmap bitmap);
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        startActivity(new Intent(ScanActivity.this, ScanActivity.class).putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA));
+    }
 
     static {
         System.loadLibrary("opencv_java3");
