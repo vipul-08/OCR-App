@@ -203,7 +203,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://ade86858.ngrok.io";
+        public static final String URL = "http://feb0d030.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -238,7 +238,7 @@ public class ResultFragment extends Fragment {
 //                        uploadImage(bitmapToFile);
 
 
-                        data.putExtra(ScanConstants.SCANNED_RESULT, uri);
+                        /*data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
                         original.recycle();
                         System.gc();
@@ -248,7 +248,7 @@ public class ResultFragment extends Fragment {
                                 dismissDialog();
                                 getActivity().finish();
                             }
-                        });
+                        });*/
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -266,7 +266,7 @@ public class ResultFragment extends Fragment {
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
 
-            MultipartBody.Part body = MultipartBody.Part.createFormData("pic", "image.jpg", requestFile);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
             Call<Response> call = retrofitInterface.uploadImage(body);
             //mProgressBar.setVisibility(View.VISIBLE);
             call.enqueue(new Callback<Response>() {
@@ -278,22 +278,29 @@ public class ResultFragment extends Fragment {
                     if (response.isSuccessful()) {
 
                         Response responseBody = response.body();
-                        Log.d("Response",responseBody.toString()+"");
-//                        mBtImageShow.setVisibility(View.VISIBLE);
-//                        mImageUrl = URL + responseBody.getPath();
-//                        Snackbar.make(findViewById(R.id.content), responseBody.getMessage(),Snackbar.LENGTH_SHORT).show();
+                        Log.d("Response",responseBody.getStatus()+" "+responseBody.getFields().toString());
+                        Intent data = new Intent();
+                        data.putExtra("fields", responseBody.getFields().toString());
+                        getActivity().setResult(Activity.RESULT_OK, data);
+                        original.recycle();
+                        System.gc();
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                dismissDialog();
+                                getActivity().finish();
+                            }
+                        });
 
                     } else {
 
                         ResponseBody errorBody = response.errorBody();
-
                         Gson gson = new Gson();
-
                         try {
 
                             Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
-                            Log.d("Error",errorResponse.getMessage()+"");
-//                            Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
+                            Log.d("Error",errorResponse.getStatus()+"");
+                            //Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
 
                         } catch (IOException e) {
                             e.printStackTrace();
