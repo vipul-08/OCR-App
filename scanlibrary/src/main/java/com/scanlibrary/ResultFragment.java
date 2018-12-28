@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -46,7 +47,8 @@ public class ResultFragment extends Fragment {
     private Button doneButton;
     private Bitmap original;
     private Bitmap transformed;
-    private Uri fileUri;
+    private Button rotateLeftBtn;
+    private Button rotateRightBtn;
 
 
     public ResultFragment() {
@@ -63,7 +65,34 @@ public class ResultFragment extends Fragment {
         scannedImageView = (ImageView) view.findViewById(R.id.scannedImage);
         Bitmap bitmap = getBitmap();
         setScannedImage(bitmap);
-        doneButton = (Button) view.findViewById(R.id.doneButton);
+        doneButton = view.findViewById(R.id.doneButton);
+        rotateLeftBtn = view.findViewById(R.id.rotateLeft);
+        rotateRightBtn = view.findViewById(R.id.rotateRight);
+
+        rotateLeftBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bitmap temp = original;
+                Matrix matrix = new Matrix();
+                matrix.postRotate(-90);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(temp , 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
+                original = rotatedBitmap;
+                setScannedImage(original);
+            }
+        });
+
+        rotateRightBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bitmap temp = original;
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(temp , 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
+                original = rotatedBitmap;
+                setScannedImage(original);
+            }
+        });
+
         doneButton.setOnClickListener(new DoneButtonClickListener());
     }
 
@@ -103,104 +132,6 @@ public class ResultFragment extends Fragment {
         progressDialogFragment.dismissAllowingStateLoss();
     }
 
-//    private File createImageFile() {
-//        clearTempImages();
-//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new
-//                Date());
-//        File file = new File(ScanConstants.IMAGE_PATH, "IMG_" + timeStamp +
-//                ".jpg");
-//        fileUri = Uri.fromFile(file);
-//        return file;
-//    }
-
-//    private void clearTempImages() {
-//        try {
-//            File tempFolder = new File(ScanConstants.IMAGE_PATH);
-//            for (File f : tempFolder.listFiles())
-//                f.delete();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void uploadImage(File bitmapToFile) {
-//
-//        Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl("http://ade86858.ngrok.io/")
-//                .addConverterFactory(GsonConverterFactory.create())
-//                .build();
-//
-//        RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
-//        Call<Response> call = retrofitInterface.test();
-//        Log.d(TAG, "uploadImage: call : " + call);
-//        call.enqueue(new Callback<Response>() {
-//            @Override
-//            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-//                Log.d(TAG, "onResponse: Response Success : " + response);
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Response> call, Throwable t) {
-//                Log.d(TAG, "onResponse: Response Error : " + t);
-//
-//            }
-//
-//
-//        });
-//
-
-//        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), bitmapToFile);
-//
-//        MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
-//        Call<Response> call = retrofitInterface.uploadImage(body);
-////        mProgressBar.setVisibility(View.VISIBLE);
-//        call.enqueue(new Callback<Response>() {
-//            @Override
-//            public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-//
-////                mProgressBar.setVisibility(View.GONE);
-//
-//                if (response.isSuccessful()) {
-//
-////                    Response responseBody = response.body();
-////                    mBtImageShow.setVisibility(View.VISIBLE);
-////                    mImageUrl = URL + responseBody.getPath();
-////                    Snackbar.make(findViewById(R.id.content), responseBody.getMessage(),Snackbar.LENGTH_SHORT).show();
-//
-//                    if (response.code() == 200) {
-//                        Log.d(TAG, "onResponse: =============================================================");
-//                    }
-//
-//                    Toast.makeText(getActivity().getBaseContext(), response.code() + " ", Toast.LENGTH_SHORT).show();
-//
-//                } else {
-//
-//                    ResponseBody errorBody = response.errorBody();
-//
-//                    Gson gson = new Gson();
-//
-//                    try {
-//
-//                        Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
-//                        Log.d(TAG, "onResponse: Error" + errorResponse.getMessage());
-////                        Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
-//
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<Response> call, Throwable t) {
-//
-//                // mProgressBar.setVisibility(View.GONE);
-//                Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
-//            }
-//        });
-//
-//    }
-
     private class DoneButtonClickListener implements View.OnClickListener {
 
         public static final String URL = "http://33fb6f11.ngrok.io";
@@ -224,23 +155,11 @@ public class ResultFragment extends Fragment {
 
                         //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+                        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 0, stream);
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
-
-
-//                        final int lnth=bitmap.getByteCount();
-//                        ByteBuffer dst= ByteBuffer.allocate(lnth);
-//                        bitmap.copyPixelsToBuffer( dst);
-//                        byte[] barray=dst.array();
                         uploadImage(byteArray);
-
-
-//                        File bitmapToFile = createImageFile();
-//                        Log.d(TAG, "run: bitmapToFile: " + bitmapToFile);
-//                        uploadImage(bitmapToFile);
-
 
                         /*data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
@@ -253,12 +172,14 @@ public class ResultFragment extends Fragment {
                                 getActivity().finish();
                             }
                         });*/
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             });
         }
+
         private void uploadImage(byte[] imageBytes) {
 
             Retrofit retrofit = new Retrofit.Builder()

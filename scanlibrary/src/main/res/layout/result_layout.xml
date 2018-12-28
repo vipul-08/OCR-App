@@ -5,21 +5,44 @@
     android:background="@android:color/black"
     android:orientation="vertical">
 
-    <Button
-        android:id="@+id/doneButton"
+    <LinearLayout
+        android:id="@+id/newLinear"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@color/bottom_background_color"
         android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
         android:padding="@dimen/bottom_bar_padding"
-        android:text="@string/done" />
+        android:weightSum="5">
 
+        <ImageButton
+            android:id="@+id/rotateLeft"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_rotate_left_black_24dp"/>
+
+        <Button
+            android:id="@+id/doneButton"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="wrap_content"
+            android:background="@color/bottom_background_color"
+            android:orientation="horizontal"
+            android:text="UPLOAD" />
+
+        <ImageButton
+            android:id="@+id/rotateRight"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_rotate_right_black_24dp"/>
+
+    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/doneButton"
+        android:layout_above="@id/newLinear"
         android:layout_gravity="center"
         android:layout_margin="@dimen/scanPadding">
 
