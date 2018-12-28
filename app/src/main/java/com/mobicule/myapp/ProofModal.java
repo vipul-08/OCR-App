@@ -1,9 +1,14 @@
 package com.mobicule.myapp;
+
 public class ProofModal {
     String proofName;
     String imageSrc;
 
     public ProofModal() {
+    }
+
+    public ProofModal(String proofName) {
+        this.proofName = proofName;
     }
 
     public ProofModal(String proofName, String imageSrc) {
@@ -22,8 +27,8 @@ public class ProofModal {
     public String getImageSrc() {
         return imageSrc;
     }
-
-    public void setImageSrc(String imageSrc) {
-        this.imageSrc = imageSrc;
-    }
+//
+//    public void setImageSrc(String imageSrc) {
+//        this.imageSrc = imageSrc;
+//    }
 }

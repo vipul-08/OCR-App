@@ -134,7 +134,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://33fb6f11.ngrok.io";
+        public static final String URL = "http://a42c2b9d.ngrok.io";
 
         @Override
         public void onClick(View v) {
