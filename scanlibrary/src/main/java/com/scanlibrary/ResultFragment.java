@@ -203,7 +203,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://feb0d030.ngrok.io";
+        public static final String URL = "http://33fb6f11.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -220,11 +220,15 @@ public class ResultFragment extends Fragment {
                         Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
 
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,1920,1080,true);
+
                         //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+                        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
+
+
 
 //                        final int lnth=bitmap.getByteCount();
 //                        ByteBuffer dst= ByteBuffer.allocate(lnth);

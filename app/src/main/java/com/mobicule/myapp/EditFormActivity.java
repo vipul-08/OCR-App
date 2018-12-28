@@ -65,7 +65,7 @@ public class EditFormActivity extends AppCompatActivity {
                 }
                 Log.d("Final Json: ",jsonObject.toString()+"");
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://d9310d4a.ngrok.io")
+                        .baseUrl("http://33fb6f11.ngrok.io")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
                 ProofClient proofClient = retrofit.create(ProofClient.class);
