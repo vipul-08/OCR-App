@@ -6,10 +6,10 @@ import org.json.JSONObject;
 
 public class Response {
 
-    private String status;
+    private boolean status;
     private JsonObject fields;
 
-    public String getStatus() {
+    public boolean getStatus() {
         return status;
     }
 

@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.google.gson.Gson;
@@ -47,8 +48,8 @@ public class ResultFragment extends Fragment {
     private Button doneButton;
     private Bitmap original;
     private Bitmap transformed;
-    private Button rotateLeftBtn;
-    private Button rotateRightBtn;
+    private ImageButton rotateLeftBtn;
+    private ImageButton rotateRightBtn;
 
 
     public ResultFragment() {
@@ -134,7 +135,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://a42c2b9d.ngrok.io";
+        public static final String URL = "http://e0af0612.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -155,7 +156,7 @@ public class ResultFragment extends Fragment {
 
                         //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 0, stream);
+                        scaledBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
@@ -189,9 +190,9 @@ public class ResultFragment extends Fragment {
 
             RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
 
-            RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), imageBytes);
 
-            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.jpg", requestFile);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.png", requestFile);
             Call<Response> call = retrofitInterface.uploadImage(body);
             //mProgressBar.setVisibility(View.VISIBLE);
             call.enqueue(new Callback<Response>() {
@@ -199,7 +200,6 @@ public class ResultFragment extends Fragment {
                 public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
 
                     //mProgressBar.setVisibility(View.GONE);
-
                     if (response.isSuccessful()) {
 
                         Response responseBody = response.body();
