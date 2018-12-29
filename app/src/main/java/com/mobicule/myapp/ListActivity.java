@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -80,9 +82,12 @@ public class ListActivity extends AppCompatActivity {
 
         File f = new File(Environment.getExternalStorageDirectory()+"/"+"DocumentScanner"+"/"+title+"/"+"imageDir");
         File[] files = f.listFiles();
-
-        for(int j = 0 ; j < files.length ; j++) {
-
+        if(files != null) {
+            for(int j = 0 ; j < files.length ; j++) {
+                Bitmap bitmap = BitmapFactory.decodeFile(files[j].getPath());
+                list.add(new NewModal("PAN CARD",bitmap));
+                adapter.notifyDataSetChanged();
+            }
         }
 
         list.add(new NewModal("Pan card 1"));

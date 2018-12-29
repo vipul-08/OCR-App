@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -32,6 +33,9 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.CustomView
     public void onBindViewHolder(@NonNull CustomViewHolder holder, int position) {
         NewModal item = list.get(position);
         holder.tv.setText(item.getText());
+        if(item.bmp != null) {
+            holder.iv.setImageBitmap(item.bmp);
+        }
     }
 
     @Override
@@ -42,10 +46,12 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.CustomView
     class CustomViewHolder extends RecyclerView.ViewHolder {
 
         TextView tv;
+        ImageView iv;
 
         public CustomViewHolder(View itemView) {
             super(itemView);
             tv = itemView.findViewById(R.id.textview_name);
+            iv = itemView.findViewById(R.id.imageview);
         }
     }
 }
