@@ -2,6 +2,7 @@ package com.mobicule.myapp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -23,7 +24,7 @@ public class ListActivity extends AppCompatActivity {
     CustomAdapter adapter;
 
     FloatingActionButton fab;
-
+    String title;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +33,7 @@ public class ListActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
 
-        String title = bundle.getString("title");
+        title = bundle.getString("title");
 
 
         Log.d("ListActivity", "onCreate: title:  " + title);
@@ -47,6 +48,7 @@ public class ListActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(ListActivity.this, ScanActivity.class);
+                intent.putExtra("type",title);
                 intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, ScanConstants.OPEN_CAMERA);
                 startActivityForResult(intent, 99);
             }
@@ -76,7 +78,9 @@ public class ListActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if ((requestCode == 99) && (resultCode == Activity.RESULT_OK)) {
             String fields = data.getStringExtra("fields");
-            startActivity(new Intent(ListActivity.this, EditFormActivity.class).putExtra("fields", fields));
+            Uri uri = data.getExtras().getParcelable("uri");
+            String type = data.getStringExtra("type");
+            startActivity(new Intent(ListActivity.this, EditFormActivity.class).putExtra("fields", fields).putExtra("type",type).putExtra("uri",uri));
         }
     }
 }

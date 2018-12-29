@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -135,7 +136,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://e0af0612.ngrok.io";
+        public static final String URL = "http://066daf97.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -160,7 +161,7 @@ public class ResultFragment extends Fragment {
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
-                        uploadImage(byteArray);
+                        uploadImage(byteArray,uri);
 
                         /*data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
@@ -181,7 +182,15 @@ public class ResultFragment extends Fragment {
             });
         }
 
-        private void uploadImage(byte[] imageBytes) {
+        private String  getType() {
+            Log.d("Type",getArguments().getString("type"));
+            return getArguments().getString("type");
+            //return typeDoc;
+        }
+
+        private void uploadImage(byte[] imageBytes , final Uri uri) {
+
+            //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(URL)
@@ -191,31 +200,31 @@ public class ResultFragment extends Fragment {
             RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), imageBytes);
-
-            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "image.png", requestFile);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "Image" /*+ timeStamp*/ +".png", requestFile);
             Call<Response> call = retrofitInterface.uploadImage(body);
             //mProgressBar.setVisibility(View.VISIBLE);
             call.enqueue(new Callback<Response>() {
                 @Override
                 public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
 
-                    //mProgressBar.setVisibility(View.GONE);
                     if (response.isSuccessful()) {
 
                         Response responseBody = response.body();
                         Log.d("Response",responseBody.getStatus()+" "+responseBody.getFields().toString());
                         Intent data = new Intent();
+                        data.putExtra("uri", uri);
                         data.putExtra("fields", responseBody.getFields().toString());
+                        data.putExtra("type",getType());
                         getActivity().setResult(Activity.RESULT_OK, data);
-                        original.recycle();
-                        System.gc();
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                        //original.recycle();
+                        //System.gc();
+                        //getActivity().runOnUiThread(new Runnable() {
+                        //    @Override
+                        //    public void run() {
                                 dismissDialog();
                                 getActivity().finish();
-                            }
-                        });
+                        //    }
+                        //});
 
                     } else {
 
@@ -236,7 +245,6 @@ public class ResultFragment extends Fragment {
                 @Override
                 public void onFailure(Call<Response> call, Throwable t) {
 
-//                    mProgressBar.setVisibility(View.GONE);
                     Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
                 }
             });

@@ -1,4 +1,8 @@
 package com.mobicule.myapp;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,7 +17,14 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
 
 import retrofit2.Call;
@@ -26,9 +37,12 @@ public class EditFormActivity extends AppCompatActivity {
 
     Button saveBtn;
     LinearLayout formData;
-    int count = 0 ;
     ArrayList<EditText> editTexts;
     ArrayList<String> keys;
+    Uri uri;
+    String type;
+    Bitmap bmp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,7 +53,14 @@ public class EditFormActivity extends AppCompatActivity {
         saveBtn = findViewById(R.id.saveBtn);
         formData = findViewById(R.id.formData);
 
+        type = getIntent().getStringExtra("type");
+        uri = getIntent().getExtras().getParcelable("uri");
 
+        try {
+            bmp = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         try {
             JSONObject jsonObject = new JSONObject(getIntent().getStringExtra("fields"));
@@ -63,11 +84,44 @@ public class EditFormActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+
+                String pathD = Environment.getExternalStorageDirectory() + "/" + "DocumentScanner" + "/" + type +"/";
+                File imageDir = new File(pathD, "imageDir");
+                File dataDir = new File(pathD, "dataDir");
+
+
+
+                if (!imageDir.exists() && !dataDir.exists()) {
+                    if (!imageDir.mkdirs() && !dataDir.mkdirs()) {
+                        Log.d("DocumentScanner", "failed to create directory");
+                    }
+                }
+
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+                File imgFile = new File(imageDir, "Image" + "_" + timeStamp + ".png");
+                File dataFile = new File(dataDir,"Data" + "_" + timeStamp + ".json");
+                try {
+                    imgFile.createNewFile();
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    bmp.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                    byte[] bitmapdata = bos.toByteArray();
+                    byte[] bmpData = bos.toByteArray();
+                    FileOutputStream fos = new FileOutputStream(imgFile);
+                    fos.write(bmpData);
+                    fos.flush();
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 Log.d("Final Json: ",jsonObject.toString()+"");
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://e0af0612.ngrok.io")
+                        .baseUrl("http://066daf97.ngrok.io")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
+
+
+
                 ProofClient proofClient = retrofit.create(ProofClient.class);
                 Call<JSONObject> call = proofClient.insertData(jsonObject);
                 call.enqueue(new Callback<JSONObject>() {

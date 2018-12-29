@@ -37,6 +37,10 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         return getIntent().getIntExtra(ScanConstants.OPEN_INTENT_PREFERENCE, 4);
     }
 
+    protected String getTypeContent() {
+        return getIntent().getStringExtra("type");
+    }
+
     @Override
     public void onBitmapSelect(Uri uri) {
         ScanFragment fragment = new ScanFragment();
@@ -55,6 +59,7 @@ public class ScanActivity extends Activity implements IScanner, ComponentCallbac
         ResultFragment fragment = new ResultFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ScanConstants.SCANNED_RESULT, uri);
+        bundle.putString("type",getTypeContent());
         fragment.setArguments(bundle);
         android.app.FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
