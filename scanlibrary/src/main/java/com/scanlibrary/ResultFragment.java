@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 
@@ -77,7 +78,7 @@ public class ResultFragment extends Fragment {
                 Bitmap temp = original;
                 Matrix matrix = new Matrix();
                 matrix.postRotate(-90);
-                Bitmap rotatedBitmap = Bitmap.createBitmap(temp , 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(temp, 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
                 original = rotatedBitmap;
                 setScannedImage(original);
             }
@@ -89,7 +90,7 @@ public class ResultFragment extends Fragment {
                 Bitmap temp = original;
                 Matrix matrix = new Matrix();
                 matrix.postRotate(90);
-                Bitmap rotatedBitmap = Bitmap.createBitmap(temp , 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
+                Bitmap rotatedBitmap = Bitmap.createBitmap(temp, 0, 0, temp.getWidth(), temp.getHeight(), matrix, true);
                 original = rotatedBitmap;
                 setScannedImage(original);
             }
@@ -153,7 +154,7 @@ public class ResultFragment extends Fragment {
                         Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
 
-                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,1920,1080,true);
+                        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 1920, 1080, true);
 
                         //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -161,7 +162,7 @@ public class ResultFragment extends Fragment {
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
-                        uploadImage(byteArray,uri);
+                        uploadImage(byteArray, uri);
 
                         /*data.putExtra(ScanConstants.SCANNED_RESULT, uri);
                         getActivity().setResult(Activity.RESULT_OK, data);
@@ -182,13 +183,13 @@ public class ResultFragment extends Fragment {
             });
         }
 
-        private String  getType() {
-            Log.d("Type",getArguments().getString("type"));
+        private String getType() {
+            Log.d("Type", getArguments().getString("type"));
             return getArguments().getString("type");
             //return typeDoc;
         }
 
-        private void uploadImage(byte[] imageBytes , final Uri uri) {
+        private void uploadImage(byte[] imageBytes, final Uri uri) {
 
             //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 
@@ -200,52 +201,65 @@ public class ResultFragment extends Fragment {
             RetrofitInterface retrofitInterface = retrofit.create(RetrofitInterface.class);
 
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), imageBytes);
-            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "Image" /*+ timeStamp*/ +".png", requestFile);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "Image" /*+ timeStamp*/ + ".png", requestFile);
             Call<Response> call = retrofitInterface.uploadImage(body);
             //mProgressBar.setVisibility(View.VISIBLE);
             call.enqueue(new Callback<Response>() {
                 @Override
                 public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
 
-                    if (response.isSuccessful()) {
+                    try {
 
-                        Response responseBody = response.body();
-                        Log.d("Response",responseBody.getStatus()+" "+responseBody.getFields().toString());
-                        Intent data = new Intent();
-                        data.putExtra("uri", uri);
-                        data.putExtra("fields", responseBody.getFields().toString());
-                        data.putExtra("type",getType());
-                        getActivity().setResult(Activity.RESULT_OK, data);
-                        //original.recycle();
-                        //System.gc();
-                        //getActivity().runOnUiThread(new Runnable() {
-                        //    @Override
-                        //    public void run() {
+                        if (response.isSuccessful()) {
+
+                            Response responseBody = response.body();
+                            Log.d("Response", responseBody.getStatus() + " " + responseBody.getFields().toString());
+                            Intent data = new Intent();
+                            data.putExtra("uri", uri);
+                            data.putExtra("fields", responseBody.getFields().toString());
+                            data.putExtra("type", getType());
+                            getActivity().setResult(Activity.RESULT_OK, data);
+                            //original.recycle();
+                            //System.gc();
+                            //getActivity().runOnUiThread(new Runnable() {
+                            //    @Override
+                            //    public void run() {
+                            dismissDialog();
+                            getActivity().finish();
+                            //    }
+                            //});
+
+                        } else {
+
+
+                            ResponseBody errorBody = response.errorBody();
+                            Gson gson = new Gson();
+                            try {
                                 dismissDialog();
-                                getActivity().finish();
-                        //    }
-                        //});
 
-                    } else {
+                                Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
+                                Log.d("Error", errorResponse.getStatus() + "");
+                                //Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
 
-                        ResponseBody errorBody = response.errorBody();
-                        Gson gson = new Gson();
-                        try {
-
-                            Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
-                            Log.d("Error",errorResponse.getStatus()+"");
-                            //Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            } catch (IOException e) {
+                                dismissDialog();
+                                e.printStackTrace();
+                            }
                         }
+                    } catch (Exception e) {
+                        dismissDialog();
+                        Toast.makeText(getActivity().getBaseContext(), "Sorry, Please upload again", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "onResponse: Try catch error : " + e);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<Response> call, Throwable t) {
 
-                    Log.d(TAG, "onFailure: "+t.getLocalizedMessage());
+                    Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
+                    dismissDialog();
+                    Toast.makeText(getActivity().getBaseContext(), "Something went wrong!", Toast.LENGTH_LONG).show();
+
                 }
             });
         }
