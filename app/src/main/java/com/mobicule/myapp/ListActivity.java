@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +77,13 @@ public class ListActivity extends AppCompatActivity {
         verticalLayoutManager.setStackFromEnd(true);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(verticalLayoutManager);
+
+        File f = new File(Environment.getExternalStorageDirectory()+"/"+"DocumentScanner"+"/"+title+"/"+"imageDir");
+        File[] files = f.listFiles();
+
+        for(int j = 0 ; j < files.length ; j++) {
+
+        }
 
         list.add(new NewModal("Pan card 1"));
         list.add(new NewModal("Pan card 2"));
@@ -146,8 +155,7 @@ public class ListActivity extends AppCompatActivity {
                         //permission is denied (this is the first time, when "never ask again" is not checked) so ask again explaining the usage of permission
 //                        // shouldShowRequestPermissionRationale will return true
                         //show the dialog or snackbar saying its necessary and try again otherwise proceed with setup.
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(ListActivity.this, Manifest.permission.READ_CONTACTS)
-                                || ActivityCompat.shouldShowRequestPermissionRationale(ListActivity.this, Manifest.permission.WRITE_CONTACTS)
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(ListActivity.this, Manifest.permission.CAMERA)
                                 || ActivityCompat.shouldShowRequestPermissionRationale(ListActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)
                                 || ActivityCompat.shouldShowRequestPermissionRationale(ListActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                             showDialogOK("STORAGE and CONTACT permissions required.",
