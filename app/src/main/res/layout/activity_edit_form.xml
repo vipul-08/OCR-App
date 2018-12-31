@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     tools:context=".EditFormActivity">
 
     <android.support.v7.widget.Toolbar
@@ -16,39 +15,43 @@
         android:theme="@style/MyDarkToolbarStyle"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Dark" />
 
+
     <TextView
+        android:id="@+id/textHeading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textHeading"
+        android:layout_below="@id/my_toolbar"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
         android:text="Please confirm the details: "
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-        />
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save"
         android:id="@+id/saveBtn"
-        android:textColor="@android:color/white"
-        android:background="@color/colorPrimary"
-        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
-
-
+        android:layout_centerHorizontal="true"
+        android:layout_margin="16dp"
+        android:background="@color/colorPrimary"
+        android:text="Save Data"
+        android:textColor="@android:color/white" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/saveBtn"
-        android:layout_marginBottom="8dp"
+        android:layout_below="@id/textHeading"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:layout_below="@id/textHeading">
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp">
 
         <LinearLayout
+            android:id="@+id/formData"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/formData"
             android:orientation="vertical">
 
         </LinearLayout>

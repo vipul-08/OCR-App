@@ -25,12 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -141,7 +136,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = "http://066daf97.ngrok.io";
+        public static final String URL = " https://63763b82.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -150,11 +145,11 @@ public class ResultFragment extends Fragment {
                 @Override
                 public void run() {
                     try {
-                        Bitmap bitmap = transformed;
+                        Bitmap bitmap = original;
 
                         Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
-
+                        Log.d(TAG, "run: URI: " + uri);
                         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 1920, 1080, true);
 
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -162,7 +157,7 @@ public class ResultFragment extends Fragment {
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
-                        uploadData(Base64.encodeToString(byteArray,Base64.DEFAULT),getType(),uri);
+                        uploadData(Base64.encodeToString(byteArray, Base64.DEFAULT), getType(), uri);
                         //uploadImage(byteArray, uri);
 
                     } catch (Exception e) {
@@ -172,38 +167,52 @@ public class ResultFragment extends Fragment {
             });
         }
 
-        private void uploadData(String base64Data , String type , final Uri uri) {
+        private void uploadData(String base64Data, String type, final Uri uri) {
             JSONObject jsonObject = new JSONObject();
             try {
-                jsonObject.accumulate("image",base64Data);
-                jsonObject.accumulate("type",type);
+                jsonObject.accumulate("image", base64Data);
+                jsonObject.accumulate("type", type);
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://c401b21c.ngrok.io")
+                        .baseUrl("http://35.244.9.26")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
 
-                RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"),jsonObject.toString());
+                RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"), jsonObject.toString());
 
                 NewClient newClient = retrofit.create(NewClient.class);
                 Call<Response> call = newClient.sendData(body);
                 call.enqueue(new Callback<Response>() {
                     @Override
                     public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
-                        Toast.makeText(getActivity(),"Response Aaya", Toast.LENGTH_SHORT).show();
-                        Response returnObj = response.body();
-                        Log.d("JsonReturn",returnObj.getStatus()+" "+returnObj.getFields().toString());
-                        Intent data = new Intent();
-                        data.putExtra("uri", uri);
-                        data.putExtra("fields", returnObj.getFields().toString());
-                        data.putExtra("type", getType());
-                        getActivity().setResult(Activity.RESULT_OK, data);
-                        dismissDialog();
-                        getActivity().finish();
+                        try {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(getActivity(), "Successfull", Toast.LENGTH_LONG).show();
+                                Response returnObj = response.body();
+                                Log.d("JsonReturn", returnObj.getStatus() + " " + returnObj.getFields().toString());
+                                Intent data = new Intent();
+                                data.putExtra("uri", uri);
+                                data.putExtra("fields", returnObj.getFields().toString());
+                                data.putExtra("type", getType());
+                                getActivity().setResult(Activity.RESULT_OK, data);
+                                dismissDialog();
+                                getActivity().finish();
+                            } else {
+                                dismissDialog();
+                                Toast.makeText(getActivity(), "Not completely Successful", Toast.LENGTH_LONG).show();
+                                Log.d(TAG, "instance initializer: Not completely successful!!");
+                            }
+                        } catch (Exception e) {
+                            Log.d(TAG, "onResponse: Try catch error:");
+                            Toast.makeText(getActivity(), "y catch error", Toast.LENGTH_LONG).show();
+
+                        }
                     }
+
 
                     @Override
                     public void onFailure(Call<Response> call, Throwable t) {
-                        Toast.makeText(getActivity(),"Response Nahi Aaya", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "onFailure: Throwable: " + t);
+                        Toast.makeText(getActivity(), "Failed!!!", Toast.LENGTH_LONG).show();
                         dismissDialog();
                     }
                 });
