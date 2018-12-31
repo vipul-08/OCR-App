@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -146,35 +150,20 @@ public class ResultFragment extends Fragment {
                 @Override
                 public void run() {
                     try {
-                        Intent data = new Intent();
                         Bitmap bitmap = transformed;
-                        if (bitmap == null) {
-                            bitmap = original;
-                        }
+
                         Log.d(TAG, "run: Bitmap: " + bitmap);
                         Uri uri = Utils.getUri(getActivity(), bitmap);
 
                         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 1920, 1080, true);
 
-                        //Bitmap bmp = intent.getExtras().get("data");
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
                         scaledBitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
                         byte[] byteArray = stream.toByteArray();
                         bitmap.recycle();
 
-                        uploadImage(byteArray, uri);
-
-                        /*data.putExtra(ScanConstants.SCANNED_RESULT, uri);
-                        getActivity().setResult(Activity.RESULT_OK, data);
-                        original.recycle();
-                        System.gc();
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                dismissDialog();
-                                getActivity().finish();
-                            }
-                        });*/
+                        uploadData(Base64.encodeToString(byteArray,Base64.DEFAULT),getType(),uri);
+                        //uploadImage(byteArray, uri);
 
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -183,15 +172,55 @@ public class ResultFragment extends Fragment {
             });
         }
 
+        private void uploadData(String base64Data , String type , final Uri uri) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.accumulate("image",base64Data);
+                jsonObject.accumulate("type",type);
+                Retrofit.Builder builder = new Retrofit.Builder()
+                        .baseUrl("http://c401b21c.ngrok.io")
+                        .addConverterFactory(GsonConverterFactory.create());
+                Retrofit retrofit = builder.build();
+
+                RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"),jsonObject.toString());
+
+                NewClient newClient = retrofit.create(NewClient.class);
+                Call<Response> call = newClient.sendData(body);
+                call.enqueue(new Callback<Response>() {
+                    @Override
+                    public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+                        Toast.makeText(getActivity(),"Response Aaya", Toast.LENGTH_SHORT).show();
+                        Response returnObj = response.body();
+                        Log.d("JsonReturn",returnObj.getStatus()+" "+returnObj.getFields().toString());
+                        Intent data = new Intent();
+                        data.putExtra("uri", uri);
+                        data.putExtra("fields", returnObj.getFields().toString());
+                        data.putExtra("type", getType());
+                        getActivity().setResult(Activity.RESULT_OK, data);
+                        dismissDialog();
+                        getActivity().finish();
+                    }
+
+                    @Override
+                    public void onFailure(Call<Response> call, Throwable t) {
+                        Toast.makeText(getActivity(),"Response Nahi Aaya", Toast.LENGTH_SHORT).show();
+                        dismissDialog();
+                    }
+                });
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         private String getType() {
             Log.d("Type", getArguments().getString("type"));
             return getArguments().getString("type");
-            //return typeDoc;
         }
 
         private void uploadImage(byte[] imageBytes, final Uri uri) {
-
-            //String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
 
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(URL)
@@ -203,7 +232,6 @@ public class ResultFragment extends Fragment {
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/png"), imageBytes);
             MultipartBody.Part body = MultipartBody.Part.createFormData("image", "Image" /*+ timeStamp*/ + ".png", requestFile);
             Call<Response> call = retrofitInterface.uploadImage(body);
-            //mProgressBar.setVisibility(View.VISIBLE);
             call.enqueue(new Callback<Response>() {
                 @Override
                 public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
@@ -219,15 +247,8 @@ public class ResultFragment extends Fragment {
                             data.putExtra("fields", responseBody.getFields().toString());
                             data.putExtra("type", getType());
                             getActivity().setResult(Activity.RESULT_OK, data);
-                            //original.recycle();
-                            //System.gc();
-                            //getActivity().runOnUiThread(new Runnable() {
-                            //    @Override
-                            //    public void run() {
                             dismissDialog();
                             getActivity().finish();
-                            //    }
-                            //});
 
                         } else {
 
@@ -239,7 +260,6 @@ public class ResultFragment extends Fragment {
 
                                 Response errorResponse = gson.fromJson(errorBody.string(), Response.class);
                                 Log.d("Error", errorResponse.getStatus() + "");
-                                //Snackbar.make(findViewById(R.id.content), errorResponse.getMessage(),Snackbar.LENGTH_SHORT).show();
 
                             } catch (IOException e) {
                                 dismissDialog();
@@ -255,11 +275,9 @@ public class ResultFragment extends Fragment {
 
                 @Override
                 public void onFailure(Call<Response> call, Throwable t) {
-
                     Log.d(TAG, "onFailure: " + t.getLocalizedMessage());
                     dismissDialog();
                     Toast.makeText(getActivity().getBaseContext(), "Something went wrong!", Toast.LENGTH_LONG).show();
-
                 }
             });
         }
