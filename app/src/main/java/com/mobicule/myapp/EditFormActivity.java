@@ -1,4 +1,7 @@
 package com.mobicule.myapp;
+import android.app.FragmentManager;
+import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
@@ -12,8 +15,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.Toast;
+
+import com.scanlibrary.ProgressDialogFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,8 +30,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Random;
 
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -43,6 +47,7 @@ public class EditFormActivity extends AppCompatActivity {
     Uri uri;
     String type;
     Bitmap bmp;
+    String imageName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +57,8 @@ public class EditFormActivity extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         myToolbar.setTitle("DocumentScanner");
+
+        imageName = getIntent().getStringExtra("name");
 
         editTexts = new ArrayList<>();
         keys = new ArrayList<>();
@@ -72,7 +79,7 @@ public class EditFormActivity extends AppCompatActivity {
             JSONObject jsonObject = new JSONObject(getIntent().getStringExtra("fields"));
             for(int i = 0; i<jsonObject.names().length(); i++){
                 Log.d("Fields", "key = " + jsonObject.names().getString(i) + " value = " + jsonObject.get(jsonObject.names().getString(i)));
-                formData.addView(generateLayout(jsonObject.names().getString(i),jsonObject.get(jsonObject.names().getString(i)).toString()));
+                formData.addView(generateLayout(String.valueOf(i),jsonObject.get(jsonObject.names().getString(i)).toString()));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -81,21 +88,27 @@ public class EditFormActivity extends AppCompatActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                JSONObject jsonObject = new JSONObject();
-                for(int i = 0 ; i < editTexts.size() ; i++) {
-                    EditText fld = editTexts.get(i);
-                    try {
-                        jsonObject.accumulate(keys.get(i),fld.getText().toString());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
 
+                final ProgressDialog dialog = new ProgressDialog(EditFormActivity.this);
+                dialog.setTitle("Uploading");
+                dialog.setMessage("Please wait while we upload your data to database...");
+                dialog.show();
+                JSONObject jsonObject = new JSONObject();
+                JSONObject finalJson = new JSONObject();
+                try {
+                    for(int i = 0 ; i < editTexts.size() ; i++) {
+                        EditText fld = editTexts.get(i);
+                        jsonObject.accumulate(String.valueOf(i),fld.getText().toString());
+                    }
+                    jsonObject.accumulate("name",imageName);
+                    finalJson.accumulate("fields",jsonObject);
+                    finalJson.accumulate("type",type);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 String pathD = Environment.getExternalStorageDirectory() + "/" + "DocumentScanner" + "/" + type +"/";
                 File imageDir = new File(pathD, "imageDir");
                 File dataDir = new File(pathD, "dataDir");
-
-
 
                 if (!imageDir.exists() && !dataDir.exists()) {
                     if (!imageDir.mkdirs() && !dataDir.mkdirs()) {
@@ -122,28 +135,34 @@ public class EditFormActivity extends AppCompatActivity {
 
                 Log.d("Final Json: ",jsonObject.toString()+"");
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://3b08cc6a.ngrok.io")
+                        .baseUrl("http://b30cca56.ngrok.io")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
-
-
+                RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"), finalJson.toString());
 
                 ProofClient proofClient = retrofit.create(ProofClient.class);
-                Call<JSONObject> call = proofClient.insertData(jsonObject);
-                call.enqueue(new Callback<JSONObject>() {
+                Call<DatabaseResponse> call = proofClient.insertData(body);
+                call.enqueue(new Callback<DatabaseResponse>() {
                     @Override
-                    public void onResponse(Call<JSONObject> call, Response<JSONObject> response) {
-                        Toast.makeText(EditFormActivity.this,"All Cool",Toast.LENGTH_SHORT).show();
+                    public void onResponse(Call<DatabaseResponse> call, Response<DatabaseResponse> response) {
+                        if(response.body().isStatus()) {
+                            Toast.makeText(EditFormActivity.this,"Data inserted successfully",Toast.LENGTH_LONG).show();
+                            dialog.dismiss();
+                            startActivity(new Intent(EditFormActivity.this,HomeActivity.class));
+                        }
+                        else {
+                            Toast.makeText(EditFormActivity.this,"Failure Due To : "+ response.body().getReason(),Toast.LENGTH_LONG).show();
+                            dialog.dismiss();
+                        }
                     }
 
                     @Override
-                    public void onFailure(Call<JSONObject> call, Throwable t) {
+                    public void onFailure(Call<DatabaseResponse> call, Throwable t) {
                         Toast.makeText(EditFormActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
-
     }
 
     public TextInputLayout generateLayout(String title, String value) {
@@ -158,5 +177,6 @@ public class EditFormActivity extends AppCompatActivity {
         layout.addView(editText);
         return layout;
     }
+
 
 }

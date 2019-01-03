@@ -9,6 +9,7 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -173,7 +174,7 @@ public class ResultFragment extends Fragment {
                 jsonObject.accumulate("image", base64Data);
                 jsonObject.accumulate("type", type);
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://35.244.9.26")
+                        .baseUrl("http://b30cca56.ngrok.io")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
 
@@ -193,18 +194,22 @@ public class ResultFragment extends Fragment {
                                 data.putExtra("uri", uri);
                                 data.putExtra("fields", returnObj.getFields().toString());
                                 data.putExtra("type", getType());
+                                data.putExtra("name",returnObj.getName());
                                 getActivity().setResult(Activity.RESULT_OK, data);
                                 dismissDialog();
                                 getActivity().finish();
                             } else {
                                 dismissDialog();
-                                Toast.makeText(getActivity(), "Not completely Successful", Toast.LENGTH_LONG).show();
+                                //Toast.makeText(getActivity(), "Not completely Successful", Toast.LENGTH_LONG).show();
+                                Snackbar snackbar = Snackbar.make(getView(),"Failed!!! Due to high network traffic.",1000);
+                                snackbar.show();
                                 Log.d(TAG, "instance initializer: Not completely successful!!");
                             }
                         } catch (Exception e) {
                             Log.d(TAG, "onResponse: Try catch error:");
-                            Toast.makeText(getActivity(), "y catch error", Toast.LENGTH_LONG).show();
-
+                            //Toast.makeText(getActivity(), "y catch error", Toast.LENGTH_LONG).show();
+                            Snackbar snackbar = Snackbar.make(getView(),"Failed!!! Due to high network traffic.",1000);
+                            snackbar.show();
                         }
                     }
 
@@ -212,7 +217,9 @@ public class ResultFragment extends Fragment {
                     @Override
                     public void onFailure(Call<Response> call, Throwable t) {
                         Log.d(TAG, "onFailure: Throwable: " + t);
-                        Toast.makeText(getActivity(), "Failed!!!", Toast.LENGTH_LONG).show();
+                        Snackbar snackbar = Snackbar.make(getView(),"Failed!!! Your internet connection seems to be slow.",1000);
+                        snackbar.show();
+                        //Toast.makeText(getActivity(), "Failed!!! Your internet connection seems to be slow.", Toast.LENGTH_LONG).show();
                         dismissDialog();
                     }
                 });

@@ -89,12 +89,6 @@ public class ListActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }
-
-        list.add(new NewModal("Pan card 1"));
-        list.add(new NewModal("Pan card 2"));
-        list.add(new NewModal("Pan card 3"));
-        list.add(new NewModal("Pan card 4"));
-
         adapter.notifyDataSetChanged();
 
     }
@@ -106,7 +100,8 @@ public class ListActivity extends AppCompatActivity {
             String fields = data.getStringExtra("fields");
             Uri uri = data.getExtras().getParcelable("uri");
             String type = data.getStringExtra("type");
-            startActivity(new Intent(ListActivity.this, EditFormActivity.class).putExtra("fields", fields).putExtra("type",type).putExtra("uri",uri));
+            String name = data.getStringExtra("name");
+            startActivity(new Intent(ListActivity.this, EditFormActivity.class).putExtra("fields", fields).putExtra("type",type).putExtra("uri",uri).putExtra("name",name));
         }
     }
 

@@ -9,7 +9,7 @@ import retrofit2.http.POST;
 
 public interface NewClient {
 
-    @POST("/image/upload2")
+    @POST("/image/upload")
     Call<Response> sendData(@Body RequestBody params);
 
 }
