@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -54,7 +55,7 @@ public class EditFormActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_form);
 
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        final Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         myToolbar.setTitle("DocumentScanner");
 
@@ -148,16 +149,24 @@ public class EditFormActivity extends AppCompatActivity {
                         if(response.body().isStatus()) {
                             Toast.makeText(EditFormActivity.this,"Data inserted successfully",Toast.LENGTH_LONG).show();
                             dialog.dismiss();
+//                            Snackbar snackbar = Snackbar.make(myToolbar.getRootView(),"Data inserted successfully",1000);
+//                            snackbar.show();
                             startActivity(new Intent(EditFormActivity.this,HomeActivity.class));
                         }
                         else {
+
                             Toast.makeText(EditFormActivity.this,"Failure Due To : "+ response.body().getReason(),Toast.LENGTH_LONG).show();
                             dialog.dismiss();
+//                            Snackbar snackbar = Snackbar.make(myToolbar.getRootView(),"Failure Due To : "+ response.body().getReason(),1000);
+//                            snackbar.show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<DatabaseResponse> call, Throwable t) {
+                        dialog.dismiss();
+//                        Snackbar snackbar = Snackbar.make(myToolbar.getRootView(),"Something went wrong",1000);
+//                        snackbar.show();
                         Toast.makeText(EditFormActivity.this,"Something went wrong",Toast.LENGTH_SHORT).show();
                     }
                 });
