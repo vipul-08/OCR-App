@@ -174,7 +174,7 @@ public class ResultFragment extends Fragment {
                 jsonObject.accumulate("image", base64Data);
                 jsonObject.accumulate("type", type);
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://b30cca56.ngrok.io")
+                        .baseUrl("http://48fccd41.ngrok.io")
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
 
