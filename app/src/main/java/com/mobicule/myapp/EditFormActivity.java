@@ -31,7 +31,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -135,8 +137,15 @@ public class EditFormActivity extends AppCompatActivity {
                 }
 
                 Log.d("Final Json: ",jsonObject.toString()+"");
+
+                OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                        .connectTimeout(100, TimeUnit.SECONDS)
+                        .readTimeout(100, TimeUnit.SECONDS)
+                        .writeTimeout(100, TimeUnit.SECONDS).build();
+
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://48fccd41.ngrok.io")
+                        .baseUrl("http://35.244.9.26")
+                        .client(okHttpClient)
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
                 RequestBody body = RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"), finalJson.toString());

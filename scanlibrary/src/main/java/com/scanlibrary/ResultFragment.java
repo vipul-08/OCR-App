@@ -27,9 +27,11 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -137,7 +139,7 @@ public class ResultFragment extends Fragment {
 
     private class DoneButtonClickListener implements View.OnClickListener {
 
-        public static final String URL = " https://63763b82.ngrok.io";
+        public static final String URL = "http://ed4eeaaf.ngrok.io";
 
         @Override
         public void onClick(View v) {
@@ -173,8 +175,15 @@ public class ResultFragment extends Fragment {
             try {
                 jsonObject.accumulate("image", base64Data);
                 jsonObject.accumulate("type", type);
+
+                OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                        .connectTimeout(100, TimeUnit.SECONDS)
+                        .readTimeout(100, TimeUnit.SECONDS)
+                        .writeTimeout(100, TimeUnit.SECONDS).build();
+
                 Retrofit.Builder builder = new Retrofit.Builder()
-                        .baseUrl("http://48fccd41.ngrok.io")
+                        .baseUrl("http://35.244.9.26")
+                        .client(okHttpClient)
                         .addConverterFactory(GsonConverterFactory.create());
                 Retrofit retrofit = builder.build();
 
@@ -262,6 +271,7 @@ public class ResultFragment extends Fragment {
                             data.putExtra("uri", uri);
                             data.putExtra("fields", responseBody.getFields().toString());
                             data.putExtra("type", getType());
+                            data.putExtra("name",responseBody.getName());
                             getActivity().setResult(Activity.RESULT_OK, data);
                             dismissDialog();
                             getActivity().finish();
